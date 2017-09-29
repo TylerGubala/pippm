@@ -10,12 +10,7 @@ def main():
     else:
 
         parser = argparse.ArgumentParser(
-            description="""A package manager tool for python.\n
-            Includes:\n
-            \t-automatic virtual environment creation\n
-            \t-automatic tracking of packages as they are installed\n
-            \t-helpers for pip (creation of .pypirc and addition of .pypirc to .gitignore)""",
-            formatter_class=argparse.RawTextHelpFormatter
+            description="A utility for managing pip packages"
             )
 
         parser.add_argument("name", help="The name of the package")
@@ -24,13 +19,15 @@ def main():
 
         group.add_argument("--init", "-n", help="Create the virtual environment named after the package", action="store_true")
 
+        parser.add_argument("--location", "-l", help="The location to create your package at")
+
         group.add_argument("--remove", "-r", help="Remove package and associated virtual environment", action="store_true")
 
         group.add_argument("--install", "-i", help="Using pip, install a dependency at the named package", action="store_true")
 
         group.add_argument("--uninstall", "-u", help="Using pip, uninstall a dependency at the named package", action="store_true")
 
-        parser.add_argument("--dependency", help="The name of the dependency to install/uninstall", required=parser.parse_args().uninstall or parser.parse_args().install)
+        parser.add_argument("--dependency", "-d" help="The name of the dependency to install/uninstall", required=parser.parse_args().uninstall or parser.parse_args().install)
 
         args=parser.parse_args()
 
@@ -50,11 +47,17 @@ def initialize(args):
 
     else:
 
+        location = args.location if args.location else os.path.join(os.getcwd(), args.name)
+
         print("Are you sure you want to create this package? ({0})".format(args.name))
 
         if input("Y for yes, N for no.").upper() is "Y" or "YES":
             
-            print("Creating package... {0}".format(args.name))
+            print("Creating package... {0}\nLocation: ".format(args.name, location))
+
+            builderInst = venv.EnvBuilder()
+
+            builderInst.create(location)
             
         else:
             
