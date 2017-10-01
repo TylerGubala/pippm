@@ -1,3 +1,4 @@
-import pippm
+from . import core
 
-pippm.main()
+if __name__ == "__main__":
+    core.main()
