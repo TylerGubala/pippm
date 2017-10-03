@@ -13,7 +13,7 @@ def main():
 
         parser.add_argument("name", help="The name of the package")
 
-        parser.add_argument("--action", "-a", help="The action to be performed.", choices=["init", "test", "deploy", "remove", "environment", "transpile", "build"], default="init")
+        parser.add_argument("action", help="The action to be performed.", choices=["init", "test", "deploy", "remove", "environment", "transpile", "build"], default="init")
         
         parser.add_argument("--testname", "-t", help="The test to run.", required=False)
 
@@ -57,7 +57,9 @@ def initialize(args):
 
         print("Are you sure you want to create this package? ({0})".format(args.name))
 
-        if input("Y for yes, N for no.").upper() is "Y" or "YES":
+        response = input("Y for yes, N for no.").upper()
+
+        if response == "Y" or response == "YES":
             
             print("Creating package... {0}\nLocation: \n\t{1}".format(args.name, location))
 
@@ -88,38 +90,40 @@ def initialize(args):
 
                 pass
 
-            with open(os.path.join(location, "sources", "Python", "package.json"), "w+") as packageJson:
+            with open(os.path.join(location, "sources", "Python", "package.json"), "w+") as packageJson, open(os.path.join(location, "sources", "Javascript", "package.json"), "w+") as nodePackage:
 
                 print("A package.json file will now be created for you.")
 
-                nameInput = input("package name: ({0})".format(args.name)).strip()
-                versionInput = input("version: (1.0.0)").strip()
+                nameInput = input("package name: ({0})".format(args.name)).strip() or args.name
+                versionInput = input("version: (1.0.0)").strip() or "1.0.0"
                 descriptionInput = input("description: ").strip()
-                entryPointInput = input("entry point: (index.js)").strip()
-                testCommandInput = input("test command: (\"echo \\\"Error: no test specified\" && exit 1\")").strip()
+                entryPointInput = input("entry point: (__main__.py)").strip() or "__main__.py"
+                testCommandInput = input("test command: (\"echo \\\"Error: no test specified\" && exit 1\")").strip() or "\"echo \\\"Error: no test specified\" && exit 1\""
                 gitRepositoryInput = input("git repository: ").strip()
                 keywordsInput = input("keywords: ").strip()
-                authorInput = input("author: ").strip()
+                authorInput = input("author: ({0})".format(os.getlogin())).strip() or os.getlogin()
                 licenseInput = input("license: ").strip()
 
                 packageDictionary = {
-                    "name": args.name,
-                    "version": versionInput if versionInput else "1.0.0",
+                    "name": nameInput,
+                    "version": versionInput,
                     "description": descriptionInput,
-                    "main": entryPointInput if entryPointInput else "__main__.py",
+                    "main": entryPointInput,
                     "directories": {"test": "tests"},
-                    "scripts": {"test": testCommandInput if testCommandInput else "\"echo \\\"Error: no test specified\" && exit 1\""},
+                    "scripts": {"test": testCommandInput},
                     "repository": {
                         "type": "git",
                         "url": "git+{0}.git".format(gitRepositoryInput)
                     },
                     "keywords": [keyword for keyword in keywordsInput.split(" ")],
-                    "author": authorInput if authorInput else os.getlogin(),
+                    "author": authorInput,
                     "bugs": {
                         "url": "{0}/issues".format(gitRepositoryInput)
                     },
                     "homepage": "{0}#readme".format(gitRepositoryInput)
                 }
+
+                packageJson.write(json.dumps(packageDictionary))
 
             builderInst = venv.EnvBuilder()
 
@@ -143,7 +147,7 @@ def getSystemInfo():
             "platformInfo": platform.platform(),
             "python": {
                 "fullVersion": sys.version,
-                "version": sys.version
+                "version": sys.version_info
             }
         }
     pass
@@ -167,5 +171,6 @@ def environment():
 
 def build():
     #build instructions here... if the user's platform is Microsoft we can probably try to py2exe... otherwise try to freeze the modules (py2exe for unix)
+    pass
 
 #subprocess.call("py -m venv {0}".format())
