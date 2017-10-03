@@ -1,5 +1,3 @@
-__all__ = ["core"]
-from . import core
+"""A package manager for the python package index and script automation and transpiler for python to javascript and python to c++"""
 
-if __name__ == "__main__":
-    core.main()
+__all__ = ["core"]
