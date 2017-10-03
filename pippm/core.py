@@ -64,7 +64,16 @@ async def environment(location=None):
         :param location=None: The package to make the environment
     """
     #environment creation here; if the environment with a matching signature (python version, subversion and platform archetecture) exists, inform the user and ask "overwrite?"
-    pass
+    try:
+        import os, venv
+    except ImportError as e:
+        print("Could not import venv, can't make a virtual environment.\nError: {0}".format(e))
+    else:
+        builderInst = venv.EnvBuilder()
+
+        systemInfo = await getSystemInfo()
+
+        builderInst.create(os.path.join(location, "environments", "Python", systemInfo["operatingSystem"], "{0}.{1}.{2} {3}".format(systemInfo["python"]["version"][0], systemInfo["python"]["version"][1], systemInfo["python"]["version"][2], systemInfo["bitness"])))
 
 async def build(location=None):
     """
@@ -99,70 +108,77 @@ async def initializeStructure(location=None):
     Set up files and folders
         :param location=None: The location of the package to set up files and folders
     """
-    for directory in ["sources", "builds", "include", "environments", "tests", "examples"]:
+    try:
+        import aiofiles, json, os, venv
+    except ImportError as e:
+        print("Could not import required files. \nError: {0}".format(e))
+    else:
 
-        try:
+        location = location if location is not None else os.getcwd()
+        for directory in ["sources", "builds", "include", "environments", "tests", "examples"]:
 
-            os.makedirs(os.path.join(location, directory))
+            try:
 
-            for language in ["Python", "JavaScript", "C", "C++", "C#", "F#", "Perl", "Bash", "Java", "Assembler", "Visual Basic"]:
+                os.makedirs(os.path.join(location, directory))
 
-                try:
-                    os.makedirs(os.path.join(location, directory, language))
-                except OSError as e:
-                    print("Existing directory: \n\t{0}".format(os.path.join(location, directory, language)))
+                for language in ["Python", "JavaScript", "C", "C++", "C#", "F#", "Perl", "Bash", "Java", "Assembler", "Visual Basic", "HTML", "PHP"]:
 
-        except OSError as e:
+                    try:
+                        os.makedirs(os.path.join(location, directory, language))
+                    except OSError as e:
+                        print("Existing directory: \n\t{0}".format(os.path.join(location, directory, language)))
 
-            print("Existing directory: \n\t{0}".format(os.path.join(location, directory)))
+            except OSError as e:
 
-    with open(os.path.join(location, ".gitignore"), "a+") as gitignore:
+                print("Existing directory: \n\t{0}".format(os.path.join(location, directory)))
 
-        print("__pycache__", file=gitignore)
-        print(".pypirc", file=gitignore)
-        print("environments", file=gitignore)
+        async with aiofiles.open(os.path.join(location, ".gitignore"), "a+") as gitignore:
 
-    with open(os.path.join(location, "sources", "Python", "requirements.txt"), "a+") as requirements:
+            print("__pycache__", file=gitignore)
+            print(".pypirc", file=gitignore)
+            print("environments", file=gitignore)
 
-        pass
+        async with aiofiles.open(os.path.join(location, "sources", "Python", "requirements.txt"), "a+") as requirements:
 
-    with open(os.path.join(location, "sources", "Python", "package.json"), "w+") as packageJson, open(os.path.join(location, "sources", "Javascript", "package.json"), "w+") as nodePackage:
+            pass
 
-        print("A package.json file will now be created for you.")
+        async with aiofiles.open(os.path.join(location, "sources", "Python", "package.json"), "w+") as packageJson, aiofiles.open(os.path.join(location, "sources", "Javascript", "package.json"), "w+") as nodePackage:
 
-        nameInput = input("package name: ({0})".format(args.name)).strip() or args.name
-        versionInput = input("version: (1.0.0)").strip() or "1.0.0"
-        descriptionInput = input("description: ").strip()
-        entryPointInput = input("entry point: (__main__.py)").strip() or "__main__.py"
-        testCommandInput = input("test command: (\"echo \\\"Error: no test specified\" && exit 1\")").strip() or "\"echo \\\"Error: no test specified\" && exit 1\""
-        gitRepositoryInput = input("git repository: ").strip()
-        keywordsInput = input("keywords: ").strip()
-        authorInput = input("author: ({0})".format(os.getlogin())).strip() or os.getlogin()
-        licenseInput = input("license: ").strip()
+            print("A package.json file will now be created for you.")
 
-        packageDictionary = {
-            "name": nameInput,
-            "version": versionInput,
-            "description": descriptionInput,
-            "main": entryPointInput,
-            "directories": {"test": "../tests"},
-            "scripts": {"test": testCommandInput},
-            "repository": {
-                "type": "git",
-                "url": "git+{0}.git".format(gitRepositoryInput)
-            },
-            "keywords": [keyword for keyword in keywordsInput.split(" ")],
-            "author": authorInput,
-            "bugs": {
-                "url": "{0}/issues".format(gitRepositoryInput)
-            },
-            "homepage": "{0}#readme".format(gitRepositoryInput)
-        }
+            nameOfThePackage = os.path.basename(os.path.normpath(location))
 
-        jsonString = json.dumps(packageDictionary)
-        print(jsonString, file=packageJson)
-        print(jsonString, file=nodePackage)
+            nameInput = input("package name: ({0})".format(nameOfThePackage)).strip() or nameOfThePackage
+            versionInput = input("version: (1.0.0)").strip() or "1.0.0"
+            descriptionInput = input("description: ").strip()
+            entryPointInput = input("entry point: (__main__.py)").strip() or "__main__.py"
+            testCommandInput = input("test command: (\"echo \\\"Error: no test specified\" && exit 1\")").strip() or "\"echo \\\"Error: no test specified\" && exit 1\""
+            gitRepositoryInput = input("git repository: ").strip()
+            keywordsInput = input("keywords: ").strip()
+            authorInput = input("author: ({0})".format(os.getlogin())).strip() or os.getlogin()
+            licenseInput = input("license: ").strip()
 
-    builderInst = venv.EnvBuilder()
+            packageDictionary = {
+                "name": nameInput,
+                "version": versionInput,
+                "description": descriptionInput,
+                "main": entryPointInput,
+                "directories": {"test": "../tests"},
+                "scripts": {"test": testCommandInput},
+                "repository": {
+                    "type": "git",
+                    "url": "git+{0}.git".format(gitRepositoryInput)
+                },
+                "keywords": [keyword for keyword in keywordsInput.split(" ")],
+                "author": authorInput,
+                "bugs": {
+                    "url": "{0}/issues".format(gitRepositoryInput)
+                },
+                "homepage": "{0}#readme".format(gitRepositoryInput)
+            }
 
-    builderInst.create(os.path.join(location, "environments", args.name))
+            jsonString = json.dumps(packageDictionary)
+            print(jsonString, file=packageJson)
+            print(jsonString, file=nodePackage)
+
+        await environment(location)

@@ -60,7 +60,7 @@ async def main():
 
         args=parser.parse_args()
 
-        args.func(args)
+        await args.func(args)
 
 async def init(args):
     """
