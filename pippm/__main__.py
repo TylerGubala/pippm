@@ -18,6 +18,7 @@ async def main():
 
         parser_init = subparsers.add_parser('init', help="Initialize the package with directories, files and package.json(s)")
         parser_init.add_argument('--location', '-l', help="The location to initialize the directory at", required=False)
+        parser_init.add_argument('--languages', help="The language directories you want to create; defaults to [\"Python\", \"Javascript\"]", nargs="*", default=["Python", "Javascript"], required=False)
         parser_init.set_defaults(func=init)
 
         parser_test = subparsers.add_parser('test', help="Perform a named test in a package")
@@ -26,8 +27,8 @@ async def main():
         parser_test.set_defaults(func=test)
 
         parser_deploy = subparsers.add_parser('deploy', help="Deploy the code to a package manager")
-        parser_deploy.add_argument('--language', '-p', help="The programming language to deploy, javascript or js for JavaScript (npm) and python or py for Python (pip)", choices=['javascript', 'js', 'python', 'py'], required=True)
         parser_deploy.add_argument('--location', '-l', help="Where the code you wish to deploy exists", required=False)
+        parser_deploy.add_argument('--language', '-p', help="The programming language to deploy, javascript or js for JavaScript (npm) and python or py for Python (pip)", choices=['javascript', 'js', 'python', 'py'], required=True)
         parser_deploy.set_defaults(func=deploy)
 
         parser_remove = subparsers.add_parser('remove', help="Remove a package from your machine (basically deletes the directory, nothing wrong with manually removing them either)")
@@ -67,7 +68,7 @@ async def init(args):
     Run core.initialize appropriately
         :param args: The arguments from the termainal
     """
-    await core.initialize(location=args.location)
+    await core.initialize(location=args.location, languages=args.languages)
 
 async def test(args):
     """

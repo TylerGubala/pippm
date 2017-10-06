@@ -1,5 +1,5 @@
 """Core functionality to pippm is contained in this submodule"""
-async def initialize(location=None):
+async def initialize(location=None, languages=["Python", "Javascript"]):
     """
     Initialize a pippm package at the location specified
         :param location=None: Path to create the new package
@@ -24,7 +24,7 @@ async def initialize(location=None):
             
             print("Creating package... \nLocation: \n\t{0}".format(location))
 
-            await initializeStructure(location=location)
+            await initializeStructure(location=location, languages=languages)
 
         else:
             
@@ -103,7 +103,7 @@ async def getSystemInfo():
     pass
     #return a dictionary representing the information on the operatring system, bitness and etc for other parts of the program to use
 
-async def initializeStructure(location=None):
+async def initializeStructure(location=None, languages=["Python", "Javascript"]):
     """
     Set up files and folders
         :param location=None: The location of the package to set up files and folders
@@ -121,7 +121,7 @@ async def initializeStructure(location=None):
 
                 os.makedirs(os.path.join(location, directory))
 
-                for language in ["Python", "JavaScript", "C", "C++", "C#", "F#", "Perl", "Bash", "Java", "Assembler", "Visual Basic", "HTML", "PHP"]:
+                for language in languages:
 
                     try:
                         os.makedirs(os.path.join(location, directory, language))
