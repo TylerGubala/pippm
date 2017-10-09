@@ -1,4 +1,4 @@
-"""A package manager for the python package index and script automation and transpiler for python to javascript and python to c++"""
+"""A package manager and transpiler for python package index"""
 __all__ = ["core"]
 
 from . import core
